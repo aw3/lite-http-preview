@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{fileName}} - Markdown 预览</title>
+  <link rel="stylesheet" href="{{vendorPath}}/github.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: #f6f8fa; color: #24292f; }
+    .toolbar { position: sticky; top: 0; z-index: 10; background: #24292f; padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+    .toolbar .title { color: #fff; font-size: 14px; font-weight: 500; }
+    .toolbar .actions { display: flex; gap: 8px; }
+    .toolbar .actions a, .toolbar .actions button { background: #238636; color: #fff; border: none; padding: 6px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: background .15s; }
+    .toolbar .actions a:hover, .toolbar .actions button:hover { background: #2ea043; }
+    .container { max-width: 920px; margin: 24px auto; padding: 0 24px; }
+    .markdown-body { background: #fff; border: 1px solid #d0d7de; border-radius: 6px; padding: 32px; font-size: 16px; line-height: 1.6; }
+    .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4, .markdown-body h5, .markdown-body h6 { margin-top: 24px; margin-bottom: 16px; font-weight: 600; line-height: 1.25; }
+    .markdown-body h1 { font-size: 2em; padding-bottom: .3em; border-bottom: 1px solid #d8dee4; }
+    .markdown-body h2 { font-size: 1.5em; padding-bottom: .3em; border-bottom: 1px solid #d8dee4; }
+    .markdown-body p { margin-bottom: 16px; }
+    .markdown-body a { color: #0969da; text-decoration: none; }
+    .markdown-body a:hover { text-decoration: underline; }
+    .markdown-body code { background: rgba(175,184,193,.2); padding: .2em .4em; border-radius: 6px; font-size: 85%; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+    .markdown-body pre { background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 6px; padding: 16px; overflow-x: auto; margin-bottom: 16px; }
+    .markdown-body pre code { background: none; padding: 0; font-size: 85%; }
+    .markdown-body blockquote { padding: 0 1em; color: #57606a; border-left: .25em solid #d0d7de; margin-bottom: 16px; }
+    .markdown-body ul, .markdown-body ol { padding-left: 2em; margin-bottom: 16px; }
+    .markdown-body li + li { margin-top: .25em; }
+    .markdown-body table { border-collapse: collapse; width: 100%; margin-bottom: 16px; }
+    .markdown-body table th, .markdown-body table td { border: 1px solid #d0d7de; padding: 6px 13px; }
+    .markdown-body table th { background: #f6f8fa; font-weight: 600; }
+    .markdown-body img { max-width: 100%; }
+    .markdown-body hr { border: none; border-top: 1px solid #d8dee4; margin: 24px 0; }
+    @media (max-width: 768px) { .container { padding: 0 12px; } .markdown-body { padding: 20px 16px; } }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <span class="title">{{fileName}}</span>
+    <div class="actions">
+      <a href="?download=true" title="下载原始 Markdown 文件">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 011 12.25v-2.5a.75.75 0 011.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 00.25-.25v-2.5a.75.75 0 011.5 0v2.5A1.75 1.75 0 0113.25 14H2.75z"/><path d="M7.25 7.689V2a.75.75 0 011.5 0v5.689l1.97-1.969a.749.749 0 111.06 1.06l-3.25 3.25a.749.749 0 01-1.06 0L4.22 6.78a.749.749 0 111.06-1.06l1.97 1.969z"/></svg>
+        下载 .md
+      </a>
+    </div>
+  </div>
+  <div class="container">
+    <div class="markdown-body" id="content"></div>
+  </div>
+  <script src="{{vendorPath}}/markdown-it.min.js"></script>
+  <script src="{{vendorPath}}/highlight.min.js"></script>
+  <script>
+    const mdSource = {{mdContent}};
+    const md = window.markdownit({
+      html: true,
+      linkify: true,
+      typographer: true,
+      highlight: function (str, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+          try {
+            return '<pre class="hljs"><code>' +
+                   hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+                   '</code></pre>';
+          } catch (__) {}
+        }
+        return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
+      }
+    });
+    document.getElementById('content').innerHTML = md.render(mdSource);
+  </script>
+</body>
+</html>

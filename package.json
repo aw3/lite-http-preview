@@ -1,0 +1,74 @@
+{
+  "name": "vscode-lite-http-preview",
+  "displayName": "Lite HTTP Preview",
+  "description": "轻量级文件预览服务，支持 Markdown 渲染、目录浏览",
+  "version": "1.0.0",
+  "publisher": "your-name",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:lite-http-preview.startServer",
+    "onCommand:lite-http-preview.previewFile"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "lite-http-preview.startServer",
+        "title": "Lite HTTP Preview: 启动预览服务"
+      },
+      {
+        "command": "lite-http-preview.stopServer",
+        "title": "Lite HTTP Preview: 停止预览服务"
+      },
+      {
+        "command": "lite-http-preview.previewFile",
+        "title": "Lite HTTP Preview: 在浏览器中预览"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "lite-http-preview.previewFile",
+          "when": "resourceScheme == file",
+          "group": "navigation@1"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Lite HTTP Preview",
+      "properties": {
+        "lite-http-preview.port": {
+          "type": "number",
+          "default": 8080,
+          "description": "预览服务端口号"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "node ./test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.60.0",
+    "@types/node": "^16.0.0",
+    "eslint": "^8.0.0"
+  },
+  "keywords": [
+    "preview",
+    "markdown",
+    "http-server",
+    "file-server"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aw3/lite-http-preview.git"
+  }
+}
