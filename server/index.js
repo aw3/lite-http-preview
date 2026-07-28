@@ -152,89 +152,108 @@ function createServer(rootDir, listMode = true) {
       return;
     }
     
-    // 读取文件
-    fs.readFile(filePath, (err, data) => {
-      if (err) {
-        if (err.code === 'ENOENT') {
+    // 先检查路径是文件还是目录
+    fs.stat(filePath, (statErr, stats) => {
+      if (statErr) {
+        if (statErr.code === 'ENOENT') {
           res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
           res.end('404 Not Found');
-        } else if (err.code === 'EISDIR') {
-          // 如果是目录
-          if (listMode && !isVendorRequest) {
-            // list 模式：显示目录文件列表
-            fs.readdir(filePath, (err2, files) => {
-              if (err2) {
-                res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
-                res.end('500 Internal Server Error');
-                return;
-              }
-              
-              // 获取文件详细信息
-              const fileStats = files.map(name => {
-                const fullPath = path.join(filePath, name);
-                const stats = fs.statSync(fullPath);
-                return { name, stats };
-              });
-              
-              // 排序：目录在前，文件在后，各自按名称排序
-              fileStats.sort((a, b) => {
-                const aIsDir = a.stats.isDirectory() ? 0 : 1;
-                const bIsDir = b.stats.isDirectory() ? 0 : 1;
-                if (aIsDir !== bIsDir) return aIsDir - bIsDir;
-                return a.name.localeCompare(b.name);
-              });
-              
-              const relativePath = path.relative(rootDir, filePath);
-              const displayPath = relativePath ? '/' + relativePath.replace(/\\/g, '/') + '/' : '/';
-              const html = buildDirectoryList(displayPath, fileStats, pathname.endsWith('/') ? pathname : pathname + '/');
-              res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-              res.end(html);
-            });
-          } else {
-            // 非 list 模式：尝试访问 index.html
-            const indexPath = path.join(filePath, 'index.html');
-            fs.readFile(indexPath, (err2, data2) => {
-              if (err2) {
-                res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-                res.end('404 Not Found');
-              } else {
-                res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-                res.end(data2);
-              }
-            });
-          }
         } else {
           res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
           res.end('500 Internal Server Error');
         }
         return;
       }
-      
-      // 获取 MIME 类型
-      const ext = path.extname(filePath).toLowerCase();
-      const fileName = path.basename(filePath);
 
-      // Markdown 文件特殊处理：预览模式 or 下载模式
-      if (ext === '.md') {
-        if (query.download === 'true') {
-          // 下载模式：返回原始 Markdown 文件
-          res.writeHead(200, {
-            'Content-Type': 'text/markdown; charset=utf-8',
-            'Content-Disposition': `attachment; filename="${encodeURIComponent(fileName)}"`
+      if (stats.isDirectory()) {
+        // 如果是目录
+        if (listMode && !isVendorRequest) {
+          // list 模式：显示目录文件列表
+          fs.readdir(filePath, (err2, files) => {
+            if (err2) {
+              res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+              res.end('500 Internal Server Error');
+              return;
+            }
+            
+            // 获取文件详细信息
+            const fileStats = files.map(name => {
+              const fullPath = path.join(filePath, name);
+              const stats = fs.statSync(fullPath);
+              return { name, stats };
+            });
+            
+            // 排序：目录在前，文件在后，各自按名称排序
+            fileStats.sort((a, b) => {
+              const aIsDir = a.stats.isDirectory() ? 0 : 1;
+              const bIsDir = b.stats.isDirectory() ? 0 : 1;
+              if (aIsDir !== bIsDir) return aIsDir - bIsDir;
+              return a.name.localeCompare(b.name);
+            });
+            
+            const relativePath = path.relative(rootDir, filePath);
+            const displayPath = relativePath ? '/' + relativePath.replace(/\\/g, '/') + '/' : '/';
+            const html = buildDirectoryList(displayPath, fileStats, pathname.endsWith('/') ? pathname : pathname + '/');
+            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end(html);
           });
-          res.end(data);
         } else {
-          // 预览模式：返回渲染后的 HTML 页面
-          const html = buildMarkdownPage(data.toString('utf-8'), fileName);
-          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-          res.end(html);
+          // 非 list 模式：尝试访问 index.html
+          const indexPath = path.join(filePath, 'index.html');
+          fs.readFile(indexPath, (err2, data2) => {
+            if (err2) {
+              res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+              res.end('404 Not Found');
+            } else {
+              res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+              res.end(data2);
+            }
+          });
         }
         return;
       }
-      
+
+      // 是文件，使用流式传输（支持大文件下载）
+      const ext = path.extname(filePath).toLowerCase();
+      const fileName = path.basename(filePath);
       const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(data);
+
+      // Markdown 文件特殊处理：预览模式 or 下载模式
+      if (ext === '.md' && query.download !== 'true') {
+        // 预览模式：读取全部内容后渲染 HTML
+        fs.readFile(filePath, (err, data) => {
+          if (err) {
+            res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+            res.end('500 Internal Server Error');
+            return;
+          }
+          const html = buildMarkdownPage(data.toString('utf-8'), fileName);
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.end(html);
+        });
+        return;
+      }
+
+      // 流式传输文件（支持大文件）
+      // 设置 Content-Length，浏览器可显示下载进度并支持断点续传的基础
+      const headers = {
+        'Content-Type': contentType,
+        'Content-Length': stats.size
+      };
+      if (ext === '.md' && query.download === 'true') {
+        headers['Content-Disposition'] = `attachment; filename="${encodeURIComponent(fileName)}"`;
+      }
+
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.on('error', () => {
+        if (!res.headersSent) {
+          res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+        }
+        res.end('500 Internal Server Error');
+      });
+
+      res.writeHead(200, headers);
+      fileStream.pipe(res);
     });
   });
 
