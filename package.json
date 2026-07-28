@@ -2,8 +2,9 @@
   "name": "vscode-lite-http-preview",
   "displayName": "Lite HTTP Preview",
   "description": "轻量级文件预览服务，支持 Markdown 渲染、目录浏览",
-  "version": "1.0.1",
-  "publisher": "your-name",
+  "version": "1.0.2",
+  "publisher": "awskie",
+  "icon": "images/icon.png",
   "engines": {
     "vscode": "^1.60.0"
   },
