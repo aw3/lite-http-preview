@@ -1,44 +1,53 @@
-# Lite HTTP Preview - VS Code 插件
+# Lite HTTP Preview - VS Code Extension
 
-轻量级文件预览服务，支持 Markdown 渲染、目录浏览和文件下载。
+A lightweight local file preview server with Markdown rendering, directory browsing, and file download.
 
-## 功能特性
+轻量级本地文件预览服务，支持 Markdown 渲染、目录浏览和文件下载。
 
-- 📁 **目录浏览** - 自动列出目录内容，支持多级导航
-- 📝 **Markdown 预览** - 自动渲染 Markdown 文件，支持代码高亮
-- 📥 **文件下载** - 所有文件支持直接下载
-- 🔒 **安全访问** - 隐藏文件（.开头）自动过滤，防止目录遍历
-- 🚀 **零配置** - 内置 HTTP 服务器，无需额外安装，开箱即用
+## Features / 功能特性
 
-## 使用方法
+- 📁 **Directory Browsing / 目录浏览** - Automatically lists directory contents with multi-level navigation / 自动列出目录内容，支持多级导航
+- 📝 **Markdown Preview / Markdown 预览** - Renders Markdown files with syntax highlighting / 自动渲染 Markdown 文件，支持代码高亮
+- 📥 **File Download / 文件下载** - Download any file directly from the browser / 所有文件支持直接下载
+- 🔒 **Secure Access / 安全访问** - Hidden files (starting with `.`) are filtered; path traversal is blocked / 隐藏文件（.开头）自动过滤，防止目录遍历
+- 🚀 **Zero Configuration / 零配置** - Built-in HTTP server, works out of the box / 内置 HTTP 服务器，开箱即用
 
-### 1. 右键预览
-在资源管理器中右键点击文件或目录，选择 **"Lite HTTP Preview: 在浏览器中预览"**
+## Usage / 使用方法
 
-### 2. 命令面板
-- `Ctrl+Shift+P` 打开命令面板
-- 输入 `Lite HTTP Preview: 启动预览服务` 启动服务
-- 输入 `Lite HTTP Preview: 停止预览服务` 停止服务
+### 1. Right-click Preview / 右键预览
 
-### 3. 状态栏
+Right-click a file or directory in the Explorer, then choose **"Lite HTTP Preview: 在浏览器中预览"**.
+
+在资源管理器中右键点击文件或目录，选择 **"Lite HTTP Preview: 在浏览器中预览"**。
+
+### 2. Command Palette / 命令面板
+
+- Press `Ctrl+Shift+P` to open the Command Palette / 按 `Ctrl+Shift+P` 打开命令面板
+- Run `Lite HTTP Preview: 启动预览服务` to start the server / 启动服务
+- Run `Lite HTTP Preview: 停止预览服务` to stop the server / 停止服务
+
+### 3. Status Bar / 状态栏
+
+After the server starts, the status bar shows the current port. Click it to stop the server.
+
 启动服务后，状态栏会显示当前端口号，点击可停止服务。
 
-## 配置选项
+## Configuration / 配置选项
 
-在 VS Code 设置中可以配置：
+Available in VS Code settings / 在 VS Code 设置中可以配置：
 
 ```json
 {
-  "lite-http-preview.port": 8080  // 预览服务端口号
+  "lite-http-preview.port": 8080
 }
 ```
 
-## 技术实现
+## Implementation / 技术实现
 
-- 内置 HTTP 服务器，无需全局安装，插件自带完整服务能力
-- 使用 markdown-it + highlight.js 渲染 Markdown
-- 支持端口自动递增（当端口被占用时）
-- 隐藏文件安全过滤
+- Built-in HTTP server, no global installation required / 内置 HTTP 服务器，无需全局安装
+- Markdown rendered with markdown-it + highlight.js / 使用 markdown-it + highlight.js 渲染 Markdown
+- Automatic port increment when the port is occupied / 支持端口自动递增（当端口被占用时）
+- Hidden file filtering for security / 隐藏文件安全过滤
 
 ## License
 
